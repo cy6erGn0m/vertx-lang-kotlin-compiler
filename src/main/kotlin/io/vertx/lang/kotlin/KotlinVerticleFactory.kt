@@ -40,12 +40,6 @@ class KotlinVerticleFactory : VerticleFactory {
             throw IllegalStateException("Cannot find verticle script: $verticleName on classpath")
         }
 
-//        val url = File("/home/cy/projects/vertx-lang-kotlin/src/main/kotlin/io/vertx/lang/kotlin/KotlinVerticleFactory.kt").toURI().toURL()
-
-        val temp = Files.createTempDirectory(KotlinVerticleFactory::class.simpleName + "-")
-
-        println("temp dir is $temp")
-
         val configuration = CompilerConfiguration()
         configuration.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, PrintingMessageCollector(System.err, MessageRenderer.PLAIN_FULL_PATHS, false))
         configuration.put(CLIConfigurationKeys.ALLOW_KOTLIN_PACKAGE, false)
