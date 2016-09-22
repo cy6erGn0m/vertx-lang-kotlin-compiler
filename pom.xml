@@ -108,6 +108,7 @@
     </dependencies>
 
     <build>
+        <sourceDirectory>src/main/kotlin</sourceDirectory>
         <testSourceDirectory>src/test/kotlin</testSourceDirectory>
 
         <plugins>
@@ -172,7 +173,7 @@
                             <includeArtifactIds>vertx-codegen</includeArtifactIds>
                             <includeTypes>jar</includeTypes>
                             <includeClassifiers>tck-sources</includeClassifiers>
-                            <outputDirectory>${basedir}/src/test/java</outputDirectory>
+                            <outputDirectory>${project.build.directory}/sources/test</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -188,7 +189,7 @@
                     </systemProperties>
                 </configuration>
                 <executions>
-                    <!-- Run the annotation processor on vertx-core and generate the Groovy API -->
+                    <!-- Run the annotation processor on vertx-core and generate the Kotlin API -->
                     <execution>
                         <id>generate-api</id>
                         <goals>
@@ -205,6 +206,51 @@
                                 <docgen.output>${project.build.directory}/generated/doc</docgen.output>
                             </optionMap>
                             <sourceDirectory>${project.build.directory}/sources/vertx-core</sourceDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.12</version>
+
+                <executions>
+                    <execution>
+                        <id>attach-generated-sources</id>
+                        <phase>generate-sources</phase>
+
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/kotlin</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                            <goal>test-jar-no-fork</goal>
+                        </goals>
+                        <phase>package</phase>
+
+                        <configuration>
+                            <includes>
+                                <include>**/*.kt</include>
+                                <include>**/*.json</include>
+                                <include>**/*.templ</include>
+                            </includes>
                         </configuration>
                     </execution>
                 </executions>
