@@ -1,8 +1,15 @@
 package io.vertx
 
+import io.vertx.core.*
+import io.vertx.core.buffer.*
+import io.vertx.core.http.*
+import io.vertx.core.http.impl.*
 import io.vertx.core.json.*
+import io.vertx.core.streams.*
 import io.vertx.lang.kotlin.*
+import io.vertx.test.core.*
 import org.junit.*
+import java.util.*
 import kotlin.test.*
 
 class JsonTest {
@@ -72,5 +79,52 @@ class JsonTest {
     @Test
     fun testKeyAccessor() {
         assertEquals("v", json { obj("k" to "v") }["k"])
+    }
+
+    @Test
+    fun testAppendJson() {
+        val b = Buffer.buffer().appendJson {
+            obj("k" to "v")
+        }
+
+        assertEquals("{\"k\":\"v\"}", b.toString(Charsets.UTF_8))
+    }
+
+    @Test
+    fun testWriteJson() {
+        val received = ArrayList<Buffer>()
+        val ws = object : WriteStream<Buffer> {
+            override fun write(data: Buffer?): WriteStream<Buffer> {
+                data?.let { received.add(it) }
+                return this
+            }
+
+            override fun writeQueueFull(): Boolean {
+                throw UnsupportedOperationException("not implemented")
+            }
+
+            override fun end() {
+                throw UnsupportedOperationException("not implemented")
+            }
+
+            override fun drainHandler(handler: Handler<Void>?): WriteStream<Buffer> {
+                throw UnsupportedOperationException("not implemented")
+            }
+
+            override fun exceptionHandler(handler: Handler<Throwable>?): WriteStream<Buffer> {
+                throw UnsupportedOperationException("not implemented")
+            }
+
+            override fun setWriteQueueMaxSize(maxSize: Int): WriteStream<Buffer> {
+                throw UnsupportedOperationException("not implemented")
+            }
+        }
+
+        ws.writeJson {
+            obj("k" to "v")
+        }
+
+        assertEquals(1, received.size)
+        assertEquals("{\"k\":\"v\"}", received.single().toString(Charsets.UTF_8))
     }
 }
