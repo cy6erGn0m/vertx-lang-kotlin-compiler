@@ -41,6 +41,21 @@ class KotlinVerticleFactoryTest {
         assertEquals("true", vertx.sharedData().getLocalMap<String, String>("V2")["started"])
     }
 
+    @Test
+    fun testIncompleteTypes() {
+        vertx.deployVerticleBlocking("withAbstractTypes.kt")
+        assertEquals("true", vertx.sharedData().getLocalMap<String, String>("V3")["started"])
+    }
+
+    @Test
+    fun testPrivateTypes() {
+        vertx.sharedData().getLocalMap<String, String>("V4").put("privateStarted", "false")
+        vertx.deployVerticleBlocking("privateVerticles.kt")
+
+        assertEquals("true", vertx.sharedData().getLocalMap<String, String>("V4")["started"])
+        assertEquals("false", vertx.sharedData().getLocalMap<String, String>("V4")["privateStarted"])
+    }
+
     private fun Vertx.deployVerticleBlocking(name: String) {
         val latch = CountDownLatch(1)
         var e: Throwable? = null

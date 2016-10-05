@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.cli.jvm.config.*
 import org.jetbrains.kotlin.codegen.*
 import org.jetbrains.kotlin.codegen.state.*
 import org.jetbrains.kotlin.config.*
+import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.js.descriptorUtils.*
 import org.jetbrains.kotlin.load.java.*
 import org.jetbrains.kotlin.name.*
@@ -76,6 +77,12 @@ class KotlinVerticleFactory : VerticleFactory {
                     .filter {
                         it.defaultType.constructor.supertypes.any { it.isVerticleType() }
                                 || it.defaultType.supertypes().any { it.isVerticleType() }
+                    }
+                    .filter {
+                        it.kind == ClassKind.CLASS
+                                && it.modality != Modality.ABSTRACT
+                                && it.modality != Modality.SEALED
+                                && it.effectiveVisibility().publicApi
                     }
                     .map { it.defaultType.getJetTypeFqName(false) }
         })
