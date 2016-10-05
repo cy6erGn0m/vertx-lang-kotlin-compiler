@@ -73,7 +73,7 @@ class KotlinVerticleFactory : VerticleFactory {
             collectedVerticles += state.factory.getClassFiles().toList()
                     .map { it.relativePath.removeSuffix(".class").replace("/", ".") }
                     .filter { it !in collectedVerticles }
-                    .mapNotNull { state.bindingContext.get(BindingContext.FQNAME_TO_CLASS_DESCRIPTOR, FqNameUnsafe(it)) }
+                    .mapNotNull { state.bindingContext.get(BindingContext.FQNAME_TO_CLASS_DESCRIPTOR, FqNameUnsafe(it.replace("$", "."))) }
                     .filter {
                         it.defaultType.constructor.supertypes.any { it.isVerticleType() }
                                 || it.defaultType.supertypes().any { it.isVerticleType() }
@@ -84,7 +84,7 @@ class KotlinVerticleFactory : VerticleFactory {
                                 && it.modality != Modality.SEALED
                                 && it.effectiveVisibility().publicApi
                     }
-                    .map { it.defaultType.getJetTypeFqName(false) }
+                    .mapNotNull { state.typeMapper.mapClass(it).className }
         })
 
         if (collectedVerticles.isEmpty()) {
