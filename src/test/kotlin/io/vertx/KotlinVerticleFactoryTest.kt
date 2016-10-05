@@ -63,6 +63,12 @@ class KotlinVerticleFactoryTest {
         assertEquals("started", vertx.sharedData().getLocalMap<String, String>("sealed")["V5"])
     }
 
+    @Test
+    fun testPackageSpecified() {
+        vertx.deployVerticleBlocking("packageSpecified.kt")
+        assertEquals("started", vertx.sharedData().getLocalMap<String, String>("P")["V"])
+    }
+
     private fun Vertx.deployVerticleBlocking(name: String) {
         val latch = CountDownLatch(1)
         var e: Throwable? = null
