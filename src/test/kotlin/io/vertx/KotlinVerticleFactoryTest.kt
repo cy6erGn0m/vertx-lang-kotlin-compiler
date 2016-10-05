@@ -69,6 +69,11 @@ class KotlinVerticleFactoryTest {
         assertEquals("started", vertx.sharedData().getLocalMap<String, String>("P")["V"])
     }
 
+    @Test
+    fun testRelativePath() {
+        vertx.deployVerticleBlocking("src/test/resources/singleVerticle.kt")
+    }
+
     private fun Vertx.deployVerticleBlocking(name: String) {
         val latch = CountDownLatch(1)
         var e: Throwable? = null
