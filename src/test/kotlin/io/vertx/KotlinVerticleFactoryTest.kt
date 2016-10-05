@@ -22,20 +22,41 @@ class KotlinVerticleFactoryTest {
 
     @Test
     fun testSingle() {
-        vertx.deployVerticle("singleVerticle.kt")
+        vertx.deployVerticleBlocking("singleVerticle.kt")
     }
 
     @Test
     fun testMultiple() {
-        val l = CountDownLatch(1)
-        vertx.deployVerticle("multipleVerticles.kt") {
-            l.countDown()
-        }
+        vertx.deployVerticleBlocking("multipleVerticles.kt")
 
-        l.await()
         // all the verticles need to be initialized properly
         for (i in 1..3) {
             assertEquals(i.toString(), vertx.sharedData().getLocalMap<String, String>("M")["M$i"])
         }
+    }
+
+    @Test
+    fun testIndirectInheritance() {
+        vertx.deployVerticleBlocking("singleNonDirectInheritance.kt")
+        assertEquals("true", vertx.sharedData().getLocalMap<String, String>("V2")["started"])
+    }
+
+    private fun Vertx.deployVerticleBlocking(name: String) {
+        val latch = CountDownLatch(1)
+        var e: Throwable? = null
+
+        deployVerticle(name) {
+            if (it.failed()) {
+                e = it.cause()
+            }
+
+            latch.countDown()
+        }
+
+        if (!latch.await(10L, TimeUnit.SECONDS)) {
+            throw TimeoutException("Verticle $name deployment timeout ")
+        }
+
+        e?.let { throw it }
     }
 }

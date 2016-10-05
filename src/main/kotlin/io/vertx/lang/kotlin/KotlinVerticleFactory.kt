@@ -14,6 +14,8 @@ import org.jetbrains.kotlin.js.descriptorUtils.*
 import org.jetbrains.kotlin.load.java.*
 import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.resolve.*
+import org.jetbrains.kotlin.types.*
+import org.jetbrains.kotlin.types.typeUtil.*
 import java.io.*
 import java.net.*
 import java.nio.file.*
@@ -71,7 +73,10 @@ class KotlinVerticleFactory : VerticleFactory {
                     .map { it.relativePath.removeSuffix(".class").replace("/", ".") }
                     .filter { it !in collectedVerticles }
                     .mapNotNull { state.bindingContext.get(BindingContext.FQNAME_TO_CLASS_DESCRIPTOR, FqNameUnsafe(it)) }
-                    .filter { it.defaultType.constructor.supertypes.any { it.getJetTypeFqName(false) == "io.vertx.core.Verticle" } }
+                    .filter {
+                        it.defaultType.constructor.supertypes.any { it.isVerticleType() }
+                                || it.defaultType.supertypes().any { it.isVerticleType() }
+                    }
                     .map { it.defaultType.getJetTypeFqName(false) }
         })
 
@@ -108,11 +113,13 @@ class KotlinVerticleFactory : VerticleFactory {
                     .mapNotNull { ifFailed(null) { Paths.get(URI.create(it)) } }
                     .toList()
 
-    fun propertyClassPath(key: String) = System.getProperty(key)
+    private fun propertyClassPath(key: String) = System.getProperty(key)
             ?.split(File.pathSeparator)
             ?.filter { it.isNotEmpty() }
             ?.map { Paths.get(it) }
             ?: emptyList()
+
+    private fun KotlinType.isVerticleType() = getJetTypeFqName(false) == "io.vertx.core.Verticle"
 
     private inline fun <R> ifFailed(default: R, block: () -> R) = try {
         block()
