@@ -2,12 +2,9 @@ package io.vertx
 
 import io.vertx.core.*
 import io.vertx.core.buffer.*
-import io.vertx.core.http.*
-import io.vertx.core.http.impl.*
 import io.vertx.core.json.*
 import io.vertx.core.streams.*
 import io.vertx.lang.kotlin.*
-import io.vertx.test.core.*
 import org.junit.*
 import java.util.*
 import kotlin.test.*
