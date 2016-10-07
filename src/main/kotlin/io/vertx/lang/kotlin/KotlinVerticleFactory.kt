@@ -28,7 +28,7 @@ class KotlinVerticleFactory : VerticleFactory {
             throw IllegalStateException("Cannot find verticle script: $verticleName on classpath")
         }
 
-        val verticleClasses = KotlinScriptExecutor.compileKotlinScript(classLoader, url) { state, it ->
+        val verticleClasses = KotlinScriptExecutor.compileKotlinScript(classLoader, false, url) { state, it ->
             it.kind == ClassKind.CLASS
                     && it.modality != Modality.ABSTRACT
                     && it.modality != Modality.SEALED

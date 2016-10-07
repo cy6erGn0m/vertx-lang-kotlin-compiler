@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.load.java.*
 import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.resolve.*
+import org.jetbrains.kotlin.script.*
 import java.io.*
 import java.net.*
 import java.nio.file.*
@@ -22,9 +23,10 @@ import java.util.jar.*
  * Author: Sergey Mashkov
  */
 object KotlinScriptExecutor {
-    fun compileKotlinScript(classLoader: ClassLoader, url: URL, predicate: (GenerationState, ClassDescriptor) -> Boolean): List<Class<*>> {
+    fun compileKotlinScript(classLoader: ClassLoader, scriptMode: Boolean, url: URL, predicate: (GenerationState, ClassDescriptor) -> Boolean): List<Class<*>> {
         val configuration = CompilerConfiguration()
-        configuration.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, PrintingMessageCollector(System.err, MessageRenderer.PLAIN_FULL_PATHS, false))
+        val printingMessageCollector = PrintingMessageCollector(System.err, MessageRenderer.WITHOUT_PATHS, false)
+        configuration.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, printingMessageCollector)
         configuration.put(CLIConfigurationKeys.ALLOW_KOTLIN_PACKAGE, false)
         configuration.put(CLIConfigurationKeys.REPORT_PERF, false)
 
@@ -32,6 +34,11 @@ object KotlinScriptExecutor {
 
         configuration.put(JVMConfigurationKeys.JVM_TARGET, JvmTarget.JVM_1_6)
         configuration.put(JVMConfigurationKeys.MODULE_NAME, JvmAbi.DEFAULT_MODULE_NAME)
+
+        if (scriptMode) {
+            configuration.put(JVMConfigurationKeys.MODULE_NAME, "dynamic")
+            configuration.add(JVMConfigurationKeys.SCRIPT_DEFINITIONS, StandardScriptDefinition)
+        }
 
         val classPath = (
                 classLoader.classPath()
@@ -56,7 +63,14 @@ object KotlinScriptExecutor {
                     .mapNotNull { state.bindingContext.get(BindingContext.FQNAME_TO_CLASS_DESCRIPTOR, FqNameUnsafe(it.replace("$", "."))) }
                     .filter { predicate(state, it) }
                     .mapNotNull { state.typeMapper.mapClass(it).className }
-        }) ?: return emptyList()
+        })
+
+        if (printingMessageCollector.hasErrors()) {
+            throw CompilationException("Compilation failed", null, null)
+        }
+        if (finalState == null) {
+            return emptyList()
+        }
 
         val compilerClassLoader = GeneratedClassLoader(finalState.factory, classLoader)
         return collected.map { compilerClassLoader.loadClass(it) }
