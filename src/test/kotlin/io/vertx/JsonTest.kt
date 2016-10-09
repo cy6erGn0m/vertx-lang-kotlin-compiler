@@ -124,4 +124,29 @@ class JsonTest {
         assertEquals(1, received.size)
         assertEquals("{\"k\":\"v\"}", received.single().toString(Charsets.UTF_8))
     }
+
+    @Test
+    fun testInferenceObj() {
+        val arr = json {
+            array(obj(
+                    "foo" to "foo_value"
+            ))
+        }
+
+        val obj: JsonObject = arr.getJsonObject(0)
+        assertNotNull(obj)
+        assertEquals("foo_value", obj.getString("foo"))
+    }
+
+    @Test
+    fun testInferenceArray() {
+        val arr = json {
+            array(array(1))
+        }
+
+        val subArray: JsonArray = arr.getJsonArray(0)
+        assertNotNull(subArray)
+        assertEquals(1, subArray.getInteger(0))
+    }
+
 }
