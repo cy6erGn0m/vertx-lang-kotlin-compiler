@@ -17,6 +17,7 @@ fun Json.obj(block: JsonObject.() -> Unit): JsonObject = JsonObject().apply(bloc
 fun Json.array(vararg values: Any?): JsonArray = JsonArray(*values)
 fun Json.array(values: Iterable<Any?>): JsonArray = JsonArray(*values.toList().toTypedArray())
 fun Json.array(value: JsonObject): JsonArray = JsonArray(value)
+fun Json.array(value: JsonArray): JsonArray = JsonArray(value)
 fun Json.array(values: List<Any?>): JsonArray = io.vertx.core.json.JsonArray(values)
 fun Json.array(block: JsonArray.() -> Unit): JsonArray = JsonArray().apply(block)
 
