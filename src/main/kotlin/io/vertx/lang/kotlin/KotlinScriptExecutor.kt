@@ -1,6 +1,7 @@
 package io.vertx.lang.kotlin
 
 import com.intellij.openapi.*
+import com.intellij.openapi.util.*
 import org.jetbrains.kotlin.cli.common.*
 import org.jetbrains.kotlin.cli.common.messages.*
 import org.jetbrains.kotlin.cli.jvm.compiler.*
@@ -24,6 +25,8 @@ import java.util.jar.*
  */
 object KotlinScriptExecutor {
     fun compileKotlinScript(classLoader: ClassLoader, scriptMode: Boolean, url: URL, predicate: (GenerationState, ClassDescriptor) -> Boolean): List<Class<*>> {
+        setIdeaIoUseFallback()
+
         val configuration = CompilerConfiguration()
         val printingMessageCollector = PrintingMessageCollector(System.err, MessageRenderer.WITHOUT_PATHS, false)
         configuration.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, printingMessageCollector)
@@ -105,5 +108,17 @@ object KotlinScriptExecutor {
         block()
     } catch (t: Throwable) {
         default
+    }
+
+    private fun setIdeaIoUseFallback() {
+        if (SystemInfo.isWindows) {
+            val properties = System.getProperties()
+
+            properties.setProperty("idea.io.use.nio2", java.lang.Boolean.TRUE.toString())
+
+            if (!(SystemInfo.isJavaVersionAtLeast("1.7") && "1.7.0-ea" != SystemInfo.JAVA_VERSION)) {
+                properties.setProperty("idea.io.use.fallback", java.lang.Boolean.TRUE.toString())
+            }
+        }
     }
 }
