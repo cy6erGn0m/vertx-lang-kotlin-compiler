@@ -1,19 +1,12 @@
 package io.vertx
 
 import io.vertx.core.*
-import io.vertx.lang.kotlin.*
 import org.junit.*
 import java.util.concurrent.*
 import kotlin.test.*
 
 class KotlinVerticleFactoryTest {
-    val factory = KotlinVerticleFactory()
     val vertx = Vertx.vertx()!!
-
-    @Before
-    fun setUp() {
-        vertx.registerVerticleFactory(factory)
-    }
 
     @After
     fun tearDown() {
